@@ -2,7 +2,7 @@
 
 ##### By David Biertimpel, Claartje Barkhof, Vicky Foing & Alex Lindt
 
-###### University of Amsterdam	|  October 2020
+###### University of Amsterdam	|  October 2019
 
 ![Lunar_landar](links/Lunar_landar.gif)
 
