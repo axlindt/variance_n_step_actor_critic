@@ -34,12 +34,11 @@ Without getting lost in further mathematical derivations, we can easily imagine 
 
 Instead of considering the full return of the trajectory, we can also calculate the TD-target 
 ![form3](links/form_3.png)
-which becomes the TD-error when combined with the baseline $V_{\pi}(S)$. ... 
+which becomes the TD-error when combined with the baseline $V_{\pi}(S)$. This reduces the variance to a minimum as we are only looking at the next step the agent takes. The intuition for this return estimate is that we are *happily surprised* if the TD-error is positive, since we received more reward than expected and thus increase the probability of the corresponding action. Conversely, in the case of a negative TD-error we receive less reward than expected and disappointedly lower the probability of the corresponding action.
 
 A different instantiation of the TD-error can be achieved by using the *action-value* function $Q_{\pi}(S, A)$. The *action-value* function describes future reward the agent can expect when taking action $A$ in state $S$ and follow policy $\pi$ afterwards. The corresponding TD-error is
 ![form3](links/form_4.png).
-
-For the same reasons as $V_{\pi}$, $Q_{\pi}$ is also a biased estimate ...
+For the same reasons as $V_{\pi}$, $Q_{\pi}$ is also a biased estimate of the *action-value* function when approximated via bootstrapping.
 
 ### Actor-Critic Methods
 
