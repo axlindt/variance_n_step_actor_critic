@@ -2,7 +2,7 @@
 
 ##### By David Biertimpel, Claartje Barkhof, Vicky Foing & Alex Lindt
 
-###### University of Amsterdam	|  October 2019
+###### University of Amsterdam	|  October 2020
 
 ![Lunar_landar](links/Lunar_landar.gif)
 
@@ -16,45 +16,47 @@ In this blog article, we investigate bias and variance in actor-critic methods b
 
 ### Policy Gradient Methods
 
-But first, before we dive deep into the topic, let's refresh our knowledge about reinforcement learning and policy gradients. In reinforcement learning our goal is to maximize the future return <img src="https://render.githubusercontent.com/render/math?math=G"> the agent receives by interacting with the environment under a specific policy <img src="https://render.githubusercontent.com/render/math?math=\pi">:
+But first, before we dive deep into the topic, let's refresh our knowledge about reinforcement learning and policy gradients. In reinforcement learning our goal is to maximize the future return $G$ the agent receives by interacting with the environment under a specific policy $\pi$:
 
-<img src="https://render.githubusercontent.com/render/math?math=J = E_{\tau} \bigg[ G(\tau) \bigg]">
+$$
+J = \mathbb{E}_{\tau} \big[ G(\tau) \big]
+$$
 
-In policy gradient methods we directly model the policy with a parameterised (often nonlinear) function <img src="https://render.githubusercontent.com/render/math?math=\pi_{\theta}"> such as a neural network and aim to perform gradient updates in the direction of the maximal return. In order to do this, we must take the gradient of return which we achieve by using the following identity:
+In policy gradient methods we directly model the policy with a parameterised (often nonlinear) function $\pi_{\theta}$ such as a neural network and aim to perform gradient updates in the direction of the maximal return. In order to do this, we must take the gradient of return which we achieve by using the following identity:
 
 ![form2](links/form_2.png)
-
 
 ### Reinforce
 
 This results in the most basic policy gradient method called REINFORCE. The intuition here is that we make actions connected to a high return more likely. When looking at the last bit of this derivation we also see explicitly that we are correcting for the frequency with which the policy selects actions.
 
-Without getting lost in further mathematical derivations, we can easily imagine that the return of the full trajectory <img src="https://render.githubusercontent.com/render/math?math=G(\tau)"> has high variance between episodes, due to stochasticity of the environment’s dynamics and the policy, and that we might want to introduce different estimates of the return. One prominent method to reduce variance is subtracting a baseline from the return, which is then called REINFORCE with baseline. A good candidate for the baseline is the *state-value* function <img src="https://render.githubusercontent.com/render/math?math=V_{\pi}(S)">, which describes how much reward the agent is expected to receive from state <img src="https://render.githubusercontent.com/render/math?math=S"> onward when following policy <img src="https://render.githubusercontent.com/render/math?math=\pi">. Similar to our policy, we can also estimate <img src="https://render.githubusercontent.com/render/math?math=V_{\pi}(S)"> with a nonlinear function approximator like a neural net. The intuition behind subtracting <img src="https://render.githubusercontent.com/render/math?math=V_{\pi}(S)"> from the actual return is that we separate the action quality from the quality of the current state. This return estimate suffers less from variance, but introduces bias, since <img src="https://render.githubusercontent.com/render/math?math=V_{\pi}(S)"> is randomly initialized and does not reflect the true *state-value* in the beginning.
+Without getting lost in further mathematical derivations, we can easily imagine that the return of the full trajectory $G(\tau)$ has high variance between episodes, due to stochasticity of the environment’s dynamics and the policy, and that we might want to introduce different estimates of the return. One prominent method to reduce variance is subtracting a baseline from the return, which is then called REINFORCE with baseline. A good candidate for the baseline is the *state-value* function $V_{\pi}(S)$, which describes how much reward the agent is expected to receive from state $S$ onward when following policy $\pi$. Similar to our policy, we can also estimate $V_{\pi}(S)$ with a nonlinear function approximator like a neural net. The intuition behind subtracting $V_{\pi}(S)$ from the actual return is that we separate the action quality from the quality of the current state. This return estimate suffers less from variance, but introduces bias, since $V_{\pi}(S)$ is randomly initialized and does not reflect the true *state-value* in the beginning.
 
 Instead of considering the full return of the trajectory, we can also calculate the TD-target 
 ![form3](links/form_3.png)
-which becomes the TD-error when combined with the baseline <img src="https://render.githubusercontent.com/render/math?math=V_{\pi}(S)">. This reduces the variance to a minimum as we are only looking at the next step the agent takes. The intuition for this return estimate is that we are *happily surprised* if the TD-error is positive, since we received more reward than expected and thus increase the probability of the corresponding action. Conversely, in the case of a negative TD-error we receive less reward than expected and disappointedly lower the probability of the corresponding action.
+which becomes the TD-error when combined with the baseline $V_{\pi}(S)$. ... 
 
-A different instantiation of the TD-error can be achieved by using the *action-value* function <img src="https://render.githubusercontent.com/render/math?math=Q_{\pi}(S, A)">. The *action-value* function describes future reward the agent can expect when taking action <img src="https://render.githubusercontent.com/render/math?math=A"> in state <img src="https://render.githubusercontent.com/render/math?math=S"> and follow policy <img src="https://render.githubusercontent.com/render/math?math=\pi"> afterwards. The corresponding TD-error is
+A different instantiation of the TD-error can be achieved by using the *action-value* function $Q_{\pi}(S, A)$. The *action-value* function describes future reward the agent can expect when taking action $A$ in state $S$ and follow policy $\pi$ afterwards. The corresponding TD-error is
 ![form3](links/form_4.png).
-For the same reasons as <img src="https://render.githubusercontent.com/render/math?math=V_{\pi}">, <img src="https://render.githubusercontent.com/render/math?math=Q_{\pi}"> is also a biased estimate of the *action-value* function when approximated via bootstrapping.
+For the same reasons as $V_{\pi}$, $Q_{\pi}$ is also a biased estimate ...
 
 ### Actor-Critic Methods
 
 By using the TD-error instead of the full return, we finally arrive at the methods on which we mainly focus in this article: actor-critic methods. In the case of actor-critic methods we use the <img src="https://render.githubusercontent.com/render/math?math=V_{\pi}"> or <img src="https://render.githubusercontent.com/render/math?math=Q_{\pi}"> estimates not only as a baseline, but also for bootstrapping (updating the estimate of <img src="https://render.githubusercontent.com/render/math?math=V_{\pi}"> or <img src="https://render.githubusercontent.com/render/math?math=Q_{\pi}"> with another estimate of  <img src="https://render.githubusercontent.com/render/math?math=V_{\pi}"> or <img src="https://render.githubusercontent.com/render/math?math=Q_{\pi}">). This bootstrapping introduces a significant bias, which helps reduce variance in the updates and therefore should stabilize and accelerate learning. Actor-critic methods have their name from combining a parameterized policy <img src="https://render.githubusercontent.com/render/math?math=\pi_{\theta}"> that decides which actions to take (the actor) and an estimate of <img src="https://render.githubusercontent.com/render/math?math=V_{\pi}"> or <img src="https://render.githubusercontent.com/render/math?math=Q_{\pi}"> which provides an opinion about the quality of current actions and/or states the agent ends up in (the critic). So the actor tells us *how to act* and the critic tells us *how well we are acting*. As already indicated above, the version of actor-critic we are going to focus on is where the TD-error is used as the critic estimate. This version is called advantage actor-critic because it determines the advantage in the return from taking the action in the current state compared to the expected return in that state.
 
 ### Policy Gradient Theorem
-Perhaps you are wondering now how on earth we can seamlessly exchange <img src="https://render.githubusercontent.com/render/math?math=G"> with all these different return estimates. This is possible because of the Policy Gradient Theorem, which states that for any differentiable policy <img src="https://render.githubusercontent.com/render/math?math=\pi_{\theta}">, for any policy objective function <img src="https://render.githubusercontent.com/render/math?math=J"> the policy gradient is:
+
+Perhaps you are wondering now how on earth we can seamlessly exchange $G$ with all these different return estimates. This is possible because of the Policy Gradient Theorem, which states that for any differentiable policy $\pi_{\theta}$, for any policy objective function $J$ the policy gradient is:
 
 ![form6](links/form_6.png)
 
-where <img src="https://render.githubusercontent.com/render/math?math=\Psi_t"> is a placeholder for different return estimates. The derivation of this theorem is actually quite straightforward and is nicely explained in Schulman’s General Advantage Estimation (GAE) paper [1](https://arxiv.org/abs/1506.02438) or for people who prefer visual input in [Hado van Hasselt’s deepmind lecture on Policy Gradients and Actor-Critics at UCL](https://www.youtube.com/watch?v=bRfUxQs6xIM).
+where $\Psi_t$ is a placeholder for different return estimates. The derivation of this theorem is actually quite straightforward and is nicely explained in Schulman’s General Advantage Estimation (GAE) paper [1](https://arxiv.org/abs/1506.02438) or for people who prefer visual input in [Hado van Hasselt’s deepmind lecture on Policy Gradients and Actor-Critics at UCL](https://www.youtube.com/watch?v=bRfUxQs6xIM).
 
 ### N-step bootstrapping
 
 Now we heard about quite some strategies to choose either a biased (TD-error) or high variance estimate (Monte-Carlo in REINFORCE), however, the choice has been quite binary so far. In order to be able to study the trade-off between bias and variance it would be nice to have some estimates between both extremes. Here n-step returns enter the ring. Instead of bootstrapping with the estimated *state-value* of the next state as in the TD-error before, we also can observe a longer chain of rewards before plugging in the estimated state value. The state value it plugs in might be n steps away, which makes up for the name *n*-step actor-critic methods. N-step returns can be naturally integrated the actor-critic methods described above, as we just have to our TD-target. Where we had ![form3](links/form_3.png) before, we can now plug in ![form5](links/form_5.png). 
 
-If we have <img src="https://render.githubusercontent.com/render/math?math=n=\infty"> we get exactly the full Monte-Carlo return <img src="https://render.githubusercontent.com/render/math?math=G"> from REINFORCE, by contrast if we leave <img src="https://render.githubusercontent.com/render/math?math=n=1"> the method equals the previously described TD-error with a one-step look ahead. 
+If we have $n=\infty$ we get exactly the full Monte-Carlo return $G$ from REINFORCE, by contrast if we leave $n=1$ the method equals the previously described TD-error with a one-step look ahead. 
 
 Based on the theory outlined above, we hypothesise that by tuning the n-step, ranging from one-step actor-critic (high bias) to REINFORCE with baseline (high variance), we can tune the bias-variance trade-off in order to pick a sweet spot dependent on each environment. In other words, we will investigate if different values for n will be beneficial for different algorithm and environments.
 
@@ -94,15 +96,16 @@ for each episode in max_episodes:
 endfor
 ```
 
-The different instantiations of <img src="https://render.githubusercontent.com/render/math?math=\Psi"> are as follows:
+The different instantiations of $\Psi$ are as follows:
 
 | Algorithm                       | 𝚿_function                                                   |
 | ------------------------------- | ------------------------------------------------------------ |
-| REINFORCE with baseline         | <img src="https://render.githubusercontent.com/render/math?math=\Psi_{t} \leftarrow G_{t} - \hat{v}(S_{t},w)">           |
+| REINFORCE with baseline         | $\Psi_{t} \leftarrow G_{t} - \hat{v}(S_{t},w)$ |
 | Advantage Actor-Critic (1-step) | ![form7](links/form_7.png) |
 | Advantage Actor-Critic (n-step) | ![form8](links/form_8.png) |
-| Q Actor-Critic (1-step)         | ![form9](links/form_9.png)|
+| Q Actor-Critic (1-step)         | ![form9](links/form_9.png) |
 | Q Actor-Critic (n-step)         | ![form10](links/form_10.png) |
+
 
 In contrast to how the actor-critic procedure is described in Sutton & Barto [6](http://incompleteideas.net/book/RLbook2018.pdf), we do not update our models after every time step in the environment but do a batch update at the end of every episode. This stabilizes our gradients and corresponds to description in related papers and professional implementations online [7](https://github.com/openai/baselines). Inspired by the A2C algorithm [8](https://arxiv.org/abs/1602.01783) we introduce an entropy term in the actor loss reflecting the entropy of the Categorical distribution over the actions. This term flattens out the action probabilities and enforces exploration. 
 
